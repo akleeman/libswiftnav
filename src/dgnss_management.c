@@ -250,12 +250,22 @@ void dgnss_update(u8 num_sats, sdiff_t *sdiffs, double receiver_ecef[3],
                   bool disable_raim, double raim_threshold)
 {
   DEBUG_ENTRY();
-  if (DEBUG) {
-    printf("sdiff[*].prn = {");
+  if (1) {
+    printf("n: %u", num_sats);
+    printf("ecef: %f\t%f\t%f\n", receiver_ecef[0], receiver_ecef[1], receiver_ecef[2]);
+    printf("sdiff[*] \n");
     for (u8 i=0; i < num_sats; i++) {
-      printf("%u, ", sdiffs[i].sid.sat);
+      printf("sid: %u \n", sdiffs[i].sid.sat);
+      printf("  pr: %f \n", sdiffs[i].pseudorange);
+      printf("  cp: %f \n", sdiffs[i].carrier_phase);
+      printf("  do: %f \n", sdiffs[i].doppler);
+      printf("  sn: %f \n", sdiffs[i].snr);
+      printf("  pos/vel\n");
+      for (u8 j=0; j < 3; j++) {
+        printf("    %f \t %f\n", sdiffs[i].sat_pos[j], sdiffs[i].sat_vel[j]);
+      }
     }
-    printf("}\n");
+    printf("\n");
   }
 
   if (num_sats <= 1) {
@@ -368,6 +378,16 @@ s8 dgnss_iar_get_single_hyp(double *dhyp)
  */
 void dgnss_update_ambiguity_state(ambiguity_state_t *s)
 {
+  printf("==BEFORE==");
+  printf("fixed:\n");
+  for (u8 i=0; i<s->fixed_ambs.n; i++){
+    printf("  %u: %f", s->fixed_ambs.sids[i].sat, s->fixed_ambs.ambs[i]);
+  }
+  printf("float:\n");
+  for (u8 i=0; i<s->float_ambs.n; i++){
+    printf("  %u: %f", s->float_ambs.sids[i].sat, s->float_ambs.ambs[i]);
+  }
+
   /* Float filter */
   /* NOTE: if sats_management.num_sats <= 1 the filter is not updated and
    * nkf.state_dim may not match. */
@@ -394,6 +414,17 @@ void dgnss_update_ambiguity_state(ambiguity_state_t *s)
   } else {
     s->fixed_ambs.n = 0;
   }
+
+  printf("==AFTER==");
+  printf("fixed:\n");
+  for (u8 i=0; i<s->fixed_ambs.n; i++){
+    printf("  %u: %f", s->fixed_ambs.sids[i].sat, s->fixed_ambs.ambs[i]);
+  }
+  printf("float:\n");
+  for (u8 i=0; i<s->float_ambs.n; i++){
+    printf("  %u: %f", s->float_ambs.sids[i].sat, s->float_ambs.ambs[i]);
+  }
+
 }
 
 /** Finds the baseline using low latency sdiffs.

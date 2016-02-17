@@ -771,6 +771,8 @@ void calc_navigation_measurement(u8 n_channels, const channel_measurement_t *mea
   for (u8 i=0; i<n_channels; i++) {
     TOTs[i] = 1e-3 * meas[i]->time_of_week_ms;
     TOTs[i] += meas[i]->code_phase_chips / 1.023e6;
+    /** \todo This is assuming that the time of flight doesn't change
+     *   in (nav_time - meas[i]->receiver_time) seconds.  Is that true? */
     TOTs[i] += (nav_time - meas[i]->receiver_time) * meas[i]->code_phase_rate / 1.023e6;
 
     /** \todo Maybe keep track of week number in tracking channel

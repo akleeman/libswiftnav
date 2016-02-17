@@ -25,6 +25,22 @@ from sats_management cimport *
 from signal cimport *
 import numpy as np
 
+# cdef class AmbiguityState:
+# 
+#   def __init__(self, **kwargs):
+#     memset(&self._thisptr, 0, sizeof(ambiguity_state_t))
+#     if kwargs:
+#       self._thisptr = kwargs
+# 
+#   def __getattr__(self, k):
+#     return self._thisptr.get(k)
+# 
+#   def to_dict(self):
+#     return self._thisptr
+# 
+#   def from_dict(self, d):
+#     self._thisptr = d
+
 
 def dgnss_set_settings_(phase_var_test, code_var_test,
                         phase_var_kf, code_var_kf,
