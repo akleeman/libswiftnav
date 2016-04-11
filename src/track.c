@@ -792,8 +792,8 @@ void calc_navigation_measurement(u8 n_channels, const channel_measurement_t *mea
                             * meas[i]->code_phase_rate / 1.023e6;
     /* For now use the week number from the ephemeris. */
     /* TODO: Should we use a more reliable source for the week number? */
-    // TODO there might be a bug where ephmeris tow is set to 0 near end of week? without tow being rolled over?
-    // causes this functions assimption to break
+    // TODO there might be a bug where ephemeris tow is set to 0 near end of week? without tow being rolled over?
+    // causes this functions assumption to break
     gps_time_match_weeks(&nav_meas[i]->tot, &e[i]->toe);
     //gps_time_match_weeks(&nav_meas[i]->tot, rec_time); // TODO seems to cause a crash?
 
@@ -810,7 +810,14 @@ void calc_navigation_measurement(u8 n_channels, const channel_measurement_t *mea
     nav_meas[i]->snr = meas[i]->snr;
     nav_meas[i]->lock_counter = meas[i]->lock_counter;
 
-    /* calc sat clock error */
+    /* run calc_sat_state once to calculate sat clock error */
+    calc_sat_state(e[i], &nav_meas[i]->tot,
+                   nav_meas[i]->sat_pos, nav_meas[i]->sat_vel,
+                   &clock_err[i], &clock_rate_err[i]);
+    /* use the clock error to adjust the time of transmission*/
+    nav_meas[i]->tot.tow -= clock_err[i];
+    normalize_gps_time(&nav_meas[i]->tot);
+    /* recompute using the new transmission */
     calc_sat_state(e[i], &nav_meas[i]->tot,
                    nav_meas[i]->sat_pos, nav_meas[i]->sat_vel,
                    &clock_err[i], &clock_rate_err[i]);
@@ -823,8 +830,8 @@ void calc_navigation_measurement(u8 n_channels, const channel_measurement_t *mea
     /* If we were given a time, use that. */
     tor = *rec_time;
   } else {
-    /* If we were not given a recieve time then we can just set one of the
-     * pseudoranges aribtrarily to a nominal value and reference all the other
+    /* If we were not given a receive time then we can just set one of the
+     * pseudoranges arbitrarily to a nominal value and reference all the other
      * pseudoranges to that. This doesn't affect the PVT solution but does
      * potentially correspond to a large receiver clock error. */
     tor = nav_meas[0]->tot;
